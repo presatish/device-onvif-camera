@@ -131,3 +131,6 @@ ProbeTimeoutMillis = 2000
 # Maximum amount of seconds the discovery process is allowed to run before it will be cancelled.
 # It is especially important to have this configured in the case of larger subnets such as /16 and /8
 MaxDiscoverDurationSeconds = 300
+
+  [AppCustom.CredentialsMap]
+  credentials002 = ["12:34:56:**:**:**", "FF:FF:FF:FF:FF:FF"]

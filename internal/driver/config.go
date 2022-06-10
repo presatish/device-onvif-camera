@@ -42,6 +42,8 @@ type CustomConfig struct {
 
 	// Location of Provision Watchers
 	ProvisionWatcherDir string
+
+	CredentialsMap map[string]interface{}
 }
 
 // ServiceConfig a struct that wraps CustomConfig which holds the values for driver configuration
