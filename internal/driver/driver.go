@@ -113,7 +113,7 @@ func (d *Driver) Initialize(lc logger.LoggingClient, asyncCh chan<- *sdkModel.As
 	d.clientsMu = new(sync.RWMutex)
 	d.configMu = new(sync.RWMutex)
 	d.onvifClients = make(map[string]*OnvifClient)
-	d.macAddressMapper = NewMACAddressMapper(d)
+	d.macAddressMapper = NewMACAddressMapper()
 
 	deviceService := sdk.RunningService()
 
@@ -505,7 +505,7 @@ func (d *Driver) createOnvifClient(deviceName string) error {
 
 // tryGetCredentials will attempt one time to get the credentials located at secretPath from
 // secret provider and return them, otherwise return an error.
-func (d *Driver) tryGetCredentials(secretPath string) (config.Credentials, errors.EdgeX) {
+func tryGetCredentials(secretPath string) (config.Credentials, errors.EdgeX) {
 	secretData, err := sdk.RunningService().SecretProvider.GetSecret(secretPath, secret.UsernameKey, secret.PasswordKey)
 	if err != nil {
 		return config.Credentials{}, errors.NewCommonEdgeXWrapper(err)
@@ -526,7 +526,7 @@ func (d *Driver) getCredentials(secretPath string) (credentials config.Credentia
 	d.configMu.RUnlock()
 
 	for timer.HasNotElapsed() {
-		if credentials, err = d.tryGetCredentials(secretPath); err == nil {
+		if credentials, err = tryGetCredentials(secretPath); err == nil {
 			return credentials, nil
 		}
 
@@ -700,7 +700,7 @@ func (d *Driver) newTemporaryOnvifClient(device models.Device) (*OnvifClient, er
 	var credential config.Credentials
 	if cameraInfo.AuthMode != onvif.NoAuth {
 		// since this is just a temporary client, we do not want to wait for credentials to be available
-		credential, edgexErr = d.tryGetCredentials(cameraInfo.SecretPath)
+		credential, edgexErr = tryGetCredentials(cameraInfo.SecretPath)
 		if edgexErr != nil {
 			// if credentials are not found, instead of returning an error, set the AuthMode to NoAuth
 			// and allow the user to call unauthenticated endpoints
