@@ -9,8 +9,6 @@ package driver
 import (
 	"fmt"
 	sdk "github.com/edgexfoundry/device-sdk-go/v2/pkg/service"
-	"github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/secret"
-	"github.com/edgexfoundry/go-mod-bootstrap/v2/config"
 	"net"
 	"strings"
 	"sync"
@@ -39,7 +37,7 @@ func (m *MACAddressMapper) UpdateMappings(raw map[string]string) {
 
 	credsMap := make(map[string]string)
 	for secretPath, macs := range raw {
-		if _, err := sdk.RunningService().SecretProvider.GetSecret(secretPath, secret.UsernameKey); err != nil {
+		if _, err := tryGetCredentials(secretPath); err != nil {
 			lc.Warnf("One or more MAC address mappings exist for the secret path '%s' which does not exist in the Secret Store!", secretPath)
 		}
 
@@ -95,10 +93,10 @@ func (m *MACAddressMapper) GetSecretPathForMACAddress(mac string) (string, error
 	return secretPath, nil
 }
 
-func (m *MACAddressMapper) TryGetCredentialsForMACAddress(mac string) (config.Credentials, error) {
+func (m *MACAddressMapper) TryGetCredentialsForMACAddress(mac string) (Credentials, error) {
 	secretPath, err := m.GetSecretPathForMACAddress(mac)
 	if err != nil {
-		return config.Credentials{}, err
+		return Credentials{}, err
 	}
 	return tryGetCredentials(secretPath)
 }
