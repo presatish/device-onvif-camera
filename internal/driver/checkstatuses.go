@@ -93,35 +93,25 @@ func (d *Driver) tcpProbe(device sdkModel.Device) bool {
 }
 
 func (d *Driver) updateDeviceStatus(deviceName string, status string) error {
-	// todo: maybe have connection levels known as ints, so that way we can log at different levels based on
-	//       if the connection level went up or down
-	shouldUpdate := false
+	return d.sdkService.UpdateDeviceWithLock(deviceName, func(device *sdkModel.Device) bool {
+		// todo: maybe have connection levels known as ints, so that way we can log at different levels based on
+		//       if the connection level went up or down
+		shouldUpdate := false
 
-	// lookup device from cache to ensure we are updating the latest version
-	device, err := d.sdkService.GetDeviceByName(deviceName)
-	if err != nil {
-		d.lc.Errorf("Unable to get device %s from cache while trying to update its status to %s. Error: %s",
-			device.Name, status, err.Error())
-		return err
-	}
+		oldStatus := device.Protocols[OnvifProtocol][DeviceStatus]
+		if oldStatus != status {
+			d.lc.Infof("Device status for %s is now %s (used to be %s)", device.Name, status, oldStatus)
+			device.Protocols[OnvifProtocol][DeviceStatus] = status
+			shouldUpdate = true
+		}
 
-	oldStatus := device.Protocols[OnvifProtocol][DeviceStatus]
-	if oldStatus != status {
-		d.lc.Infof("Device status for %s is now %s (used to be %s)", device.Name, status, oldStatus)
-		device.Protocols[OnvifProtocol][DeviceStatus] = status
-		shouldUpdate = true
-	}
+		if status != Unreachable {
+			device.Protocols[OnvifProtocol][LastSeen] = time.Now().Format(time.UnixDate)
+			shouldUpdate = true
+		}
 
-	if status != Unreachable {
-		device.Protocols[OnvifProtocol][LastSeen] = time.Now().Format(time.UnixDate)
-		shouldUpdate = true
-	}
-
-	if shouldUpdate {
-		return d.sdkService.UpdateDevice(device)
-	}
-
-	return nil
+		return shouldUpdate
+	})
 }
 
 // taskLoop manages all of our custom background tasks such as checking camera statuses at regular intervals

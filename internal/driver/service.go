@@ -10,6 +10,7 @@ import (
 	"github.com/edgexfoundry/go-mod-bootstrap/v2/bootstrap/interfaces"
 	"github.com/edgexfoundry/go-mod-core-contracts/v2/models"
 	"net/http"
+	"sync"
 )
 
 // SDKService wraps an EdgeX SDK service.DeviceService so that it can be easily mocked in tests.
@@ -125,15 +126,46 @@ type SDKService interface {
 	// GetSecretProvider returns the interfaces.SecretProvider. The name chosen to avoid conflicts
 	// with service.DeviceService.SecretProvider struct field.
 	GetSecretProvider() interfaces.SecretProvider
+
+	// UpdateDeviceWithLock applies a thread-safe update of a device. The input is the device name and a lambda
+	// function to call with the most up-to-date device object. The lambda shall return a bool whether the device
+	// has been modified.
+	UpdateDeviceWithLock(deviceName string, updateFunc func(device *models.Device) bool) error
 }
 
 // DeviceSDKService is the native implementation of ServiceWrapper that uses the actual
 // service.DeviceService struct.
 type DeviceSDKService struct {
 	*service.DeviceService
+
+	devicesMu sync.RWMutex
 }
 
 // GetSecretProvider returns the SecretProvider
 func (s *DeviceSDKService) GetSecretProvider() interfaces.SecretProvider {
 	return s.SecretProvider
+}
+
+func (s *DeviceSDKService) UpdateDeviceWithLock(deviceName string, updateFunc func(device *models.Device) bool) error {
+	s.devicesMu.Lock()
+	defer s.devicesMu.Unlock()
+
+	// we already have the lock, so call it directly
+	device, err := s.DeviceService.GetDeviceByName(deviceName)
+	if err != nil {
+		return err
+	}
+
+	changed := updateFunc(&device)
+	if changed {
+		return s.DeviceService.UpdateDevice(device)
+	}
+	return nil
+}
+
+func (s *DeviceSDKService) GetDeviceByName(name string) (models.Device, error) {
+	s.devicesMu.RLock()
+	defer s.devicesMu.RUnlock()
+
+	return s.DeviceService.GetDeviceByName(name)
 }

@@ -263,7 +263,7 @@ func (d *Driver) discoverFilter(discoveredDevices []sdkModel.DiscoveredDevice) (
 	// loop through discovered devices and see if they are already discovered
 	for endpointRef, device := range discoveredMap {
 		if existingDevice, found := existingDevices[endpointRef]; found {
-			if err := d.updateExistingDevice(existingDevice, device); err != nil {
+			if err := d.updateExistingDevice(existingDevice.Name, device); err != nil {
 				d.lc.Errorf("error occurred while updating existing device %s: %s", existingDevice.Name, err.Error())
 			}
 			continue // skip registering existing device
@@ -277,39 +277,33 @@ func (d *Driver) discoverFilter(discoveredDevices []sdkModel.DiscoveredDevice) (
 
 // updateExistingDevice compares a discovered device and a matching existing device, and updates the existing
 // device network address and port if necessary
-func (d *Driver) updateExistingDevice(device contract.Device, discDev sdkModel.DiscoveredDevice) error {
-	shouldUpdate := false
-	if device.OperatingState == contract.Down {
-		device.OperatingState = contract.Up
-		shouldUpdate = true
-	}
+func (d *Driver) updateExistingDevice(deviceName string, discDev sdkModel.DiscoveredDevice) error {
+	return d.sdkService.UpdateDeviceWithLock(deviceName, func(device *contract.Device) bool {
+		shouldUpdate := false
+		if device.OperatingState == contract.Down {
+			device.OperatingState = contract.Up
+			shouldUpdate = true
+		}
 
-	device.Protocols[OnvifProtocol][LastSeen] = time.Now().Format(time.UnixDate)
+		device.Protocols[OnvifProtocol][LastSeen] = time.Now().Format(time.UnixDate)
 
-	existAddr := device.Protocols[OnvifProtocol][Address]
-	existPort := device.Protocols[OnvifProtocol][Port]
-	discAddr := discDev.Protocols[OnvifProtocol][Address]
-	discPort := discDev.Protocols[OnvifProtocol][Port]
-	if existAddr != discAddr ||
-		existPort != discPort {
-		d.lc.Infof("Existing device %s has been discovered with a different network address. Old: %s, Discovered: %s",
-			device.Name, existAddr+":"+existPort, discAddr+":"+discPort)
-		device.Protocols[OnvifProtocol][Address] = discAddr
-		device.Protocols[OnvifProtocol][Port] = discPort
+		existAddr, existPort := device.Protocols[OnvifProtocol][Address], device.Protocols[OnvifProtocol][Port]
+		discAddr, discPort := discDev.Protocols[OnvifProtocol][Address], discDev.Protocols[OnvifProtocol][Port]
+		if existAddr != discAddr ||
+			existPort != discPort {
+			d.lc.Infof("Existing device %s has been discovered with a different network address. Old: %s, Discovered: %s",
+				device.Name, existAddr+":"+existPort, discAddr+":"+discPort)
+			device.Protocols[OnvifProtocol][Address] = discAddr
+			device.Protocols[OnvifProtocol][Port] = discPort
 
-		shouldUpdate = true
-	}
+			shouldUpdate = true
+		}
 
-	if !shouldUpdate {
-		d.lc.Debug("Re-discovered existing device at the same network address, nothing to do")
-		return nil
-	}
+		if !shouldUpdate {
+			d.lc.Debug("Re-discovered existing device %s at the same network address %s, nothing to do",
+				deviceName, existAddr+":"+existPort)
+		}
 
-	err := d.sdkService.UpdateDevice(device)
-	if err != nil {
-		d.lc.Errorf("There was an error updating the network address for device %s: %s", device.Name, err.Error())
-		return errors.NewCommonEdgeXWrapper(err)
-	}
-
-	return nil
+		return shouldUpdate
+	})
 }
