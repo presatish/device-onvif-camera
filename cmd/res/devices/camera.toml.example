@@ -8,8 +8,8 @@ Description = "onvif conformant camera"
     Address = "192.168.12.123"
     Port = "80"
     [DeviceList.Protocols.CustomMetadata]
-    CommonName = "Door camera"
     Location = "Front door"
+    Description = "Security camera in the front door facing east"
 
 # If having more than one camera, uncomment the following config settings
 # [[DeviceList]]

@@ -95,6 +95,7 @@ func (d *Driver) createDiscoveredDevice(onvifDevice onvif.Device) (sdkModel.Disc
 				EndpointRefAddress: endpointRefAddr,
 				DeviceStatus:       Reachable,
 				LastSeen:           timestamp,
+				FriendlyName:       "",
 			},
 			CustomMetadata: {},
 		},
@@ -129,6 +130,7 @@ func (d *Driver) createDiscoveredDevice(onvifDevice onvif.Device) (sdkModel.Disc
 		device.Protocols[OnvifProtocol][HardwareId] = devInfo.HardwareId
 		device.Protocols[OnvifProtocol][DeviceStatus] = UpWithAuth
 		device.Protocols[OnvifProtocol][LastSeen] = time.Now().Format(time.UnixDate)
+		device.Protocols[OnvifProtocol][FriendlyName] = devInfo.Manufacturer + " " + devInfo.Model
 
 		// Spaces are not allowed in the device name
 		deviceName := fmt.Sprintf("%s-%s-%s",

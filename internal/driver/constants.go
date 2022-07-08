@@ -29,6 +29,7 @@ const (
 	LastSeen           = "LastSeen"
 	DeviceStatus       = "DeviceStatus"
 	MACAddress         = "MACAddress"
+	FriendlyName       = "FriendlyName"
 
 	// Maximum interval for checkStatus interval
 	maxStatusInterval = 300
