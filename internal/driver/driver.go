@@ -737,6 +737,8 @@ func (d *Driver) refreshDeviceInformation(device models.Device) error {
 		device.Protocols[OnvifProtocol][FirmwareVersion] = devInfo.FirmwareVersion
 		device.Protocols[OnvifProtocol][SerialNumber] = devInfo.SerialNumber
 		device.Protocols[OnvifProtocol][HardwareId] = devInfo.HardwareId
+		device.Protocols[OnvifProtocol][FriendlyName] = devInfo.Manufacturer + " " + devInfo.Model
+
 		return d.sdkService.UpdateDevice(device)
 	}
 
