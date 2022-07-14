@@ -22,14 +22,21 @@ const (
 )
 
 const (
+	MACAddress      = "MACAddress"
+	FriendlyName    = "FriendlyName"
+	GetFriendlyName = "GetFriendlyName"
+	SetFriendlyName = "SetFriendlyName"
+	GetMACAddress   = "GetMACAddress"
+	SetMACAddress   = "SetMACAddress"
+)
+
+const (
 	OnvifProtocol      = "Onvif"
 	Address            = "Address"
 	Port               = "Port"
 	EndpointRefAddress = "EndpointRefAddress"
 	LastSeen           = "LastSeen"
 	DeviceStatus       = "DeviceStatus"
-	MACAddress         = "MACAddress"
-	FriendlyName       = "FriendlyName"
 
 	// Maximum interval for checkStatus interval
 	maxStatusInterval = 300
