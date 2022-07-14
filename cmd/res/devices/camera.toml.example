@@ -7,6 +7,7 @@ Description = "onvif conformant camera"
     [DeviceList.Protocols.Onvif]
     Address = "192.168.12.123"
     Port = "80"
+    FriendlyName = "Home camera"
     [DeviceList.Protocols.CustomMetadata]
     Location = "Front door"
     Description = "Security camera in the front door facing east"
