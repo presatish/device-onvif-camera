@@ -689,9 +689,15 @@ func (d *Driver) newTemporaryOnvifClient(device models.Device) (*OnvifClient, er
 	return client, nil
 }
 
-// refreshNetworkInterfaces will attempt to retrieve the mac address for the specified camera
-// and update its value in the protocol properties
-func (d *Driver) refreshNetworkInterfaces(device models.Device) error {
+// refreshDevice will attempt to retrieve the MAC address and the device info for the specified camera
+// and update the values in the protocol properties
+// Also the device name is updated if the name starts with "unknown_unknown" and the status is upWithAuth
+func (d *Driver) refreshDevice(device models.Device) error {
+	devInfo, err := d.getDeviceInformation(device)
+	if err != nil {
+		return err
+	}
+
 	netInfo, err := d.getNetworkInterfaces(device)
 	if err != nil {
 		return err
@@ -703,27 +709,12 @@ func (d *Driver) refreshNetworkInterfaces(device models.Device) error {
 		return edgeXErr
 	}
 
+	isChanged := false
+
 	hwAddress := string(netInfo.NetworkInterfaces.Info.HwAddress)
 	if hwAddress != device.Protocols[OnvifProtocol][MACAddress] {
 		device.Protocols[OnvifProtocol][MACAddress] = hwAddress
-		return d.sdkService.UpdateDevice(device)
-	}
-
-	return nil
-}
-
-// refreshDeviceInformation will attempt to retrieve the device information for the specified camera
-// and update the values in the protocol properties
-func (d *Driver) refreshDeviceInformation(device models.Device) error {
-	devInfo, err := d.getDeviceInformation(device)
-	if err != nil {
-		return err
-	}
-
-	// update device to latest version in cache to prevent race conditions
-	device, edgeXErr := d.sdkService.GetDeviceByName(device.Name)
-	if err != nil {
-		return edgeXErr
+		isChanged = true
 	}
 
 	if devInfo.Manufacturer != device.Protocols[OnvifProtocol][Manufacturer] ||
@@ -737,14 +728,34 @@ func (d *Driver) refreshDeviceInformation(device models.Device) error {
 		device.Protocols[OnvifProtocol][FirmwareVersion] = devInfo.FirmwareVersion
 		device.Protocols[OnvifProtocol][SerialNumber] = devInfo.SerialNumber
 		device.Protocols[OnvifProtocol][HardwareId] = devInfo.HardwareId
+		isChanged = true
+	}
 
-		if device.Protocols[OnvifProtocol][FriendlyName] == "" {
-			device.Protocols[OnvifProtocol][FriendlyName] = devInfo.Manufacturer + " " + devInfo.Model
+	if device.Protocols[OnvifProtocol][FriendlyName] == "" {
+		device.Protocols[OnvifProtocol][FriendlyName] = devInfo.Manufacturer + " " + devInfo.Model
+	}
+
+	if isChanged {
+		if strings.Contains(device.Name, "unknown_unknown_") {
+			err := d.sdkService.RemoveDeviceByName(device.Name)
+			d.lc.Infof("Removing device '%s' to update device with the updated name", device.Name)
+			if err != nil {
+				d.lc.Warnf("An error occurred while removing the device %s: %s",
+					device.Name, err)
+			}
+
+			device.Id = ""
+			// Spaces are not allowed in the device name
+			device.Name = fmt.Sprintf("%s-%s-%s",
+				strings.ReplaceAll(devInfo.Manufacturer, " ", "-"),
+				strings.ReplaceAll(devInfo.Model, " ", "-"),
+				device.Protocols[OnvifProtocol][EndpointRefAddress])
+			_, err = d.sdkService.AddDevice(device)
+			d.lc.Infof("Adding device back with the updated name '%s'", device.Name)
+			return err
 		}
 
 		return d.sdkService.UpdateDevice(device)
 	}
-
 	return nil
-
 }

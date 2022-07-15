@@ -36,15 +36,9 @@ func (d *Driver) checkStatuses() {
 			} else if statusChanged && status == UpWithAuth {
 				d.lc.Infof("Device %s is now %s, refreshing the device information.", device.Name, UpWithAuth)
 				go func() { // refresh the device information in the background
-					refreshErr := d.refreshDeviceInformation(device)
+					refreshErr := d.refreshDevice(device)
 					if refreshErr != nil {
-						d.lc.Warnf("An error occurred while refreshing the device information for %s: %s",
-							device.Name, refreshErr.Error())
-					}
-
-					refreshErr = d.refreshNetworkInterfaces(device)
-					if refreshErr != nil {
-						d.lc.Warnf("An error occurred while refreshing the network information for %s: %s",
+						d.lc.Warnf("An error occurred while refreshing the device %s: %s",
 							device.Name, refreshErr.Error())
 					}
 				}()
@@ -56,7 +50,7 @@ func (d *Driver) checkStatuses() {
 
 // testConnectionMethods will try to determine the state using different device calls
 // and return the most accurate status
-// Higher degrees of connection are tested first, becuase if they
+// Higher degrees of connection are tested first, because if they
 // succeed, the lower levels of connection will too
 func (d *Driver) testConnectionMethods(device models.Device) (status string) {
 
