@@ -11,7 +11,7 @@ Description = "onvif conformant camera"
     MACAddress = "aa:bb:cc:dd:ee:ff"
     [DeviceList.Protocols.CustomMetadata]
     Location = "Front door"
-    Description = "Security camera in the front door facing east"
+    Color = "Black and white"
 
 # If having more than one camera, uncomment the following config settings
 [[DeviceList]]

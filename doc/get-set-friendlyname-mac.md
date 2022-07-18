@@ -58,7 +58,7 @@ Use the FriendlyName device resource to retrieve `FriendlyName` of a camera.
 ```shell
 curl http://localhost:59882/api/v2/device/name/<device name>/FriendlyName | json_pp
 ```
-2. The repsonse from the curl command.
+2. Response from the curl command. FriendlyName value can be found under `objectValue` in the response.
 ```shell
 {
    "apiVersion" : "v2",
@@ -118,25 +118,26 @@ Use the MACAddress device resource to retrieve `MACAddress` of a camera.
 ```shell
 curl http://localhost:59882/api/v2/device/name/<device name>/MACAddress | json_pp
 ```
-2. The repsonse from the curl command.
+2. Response from the curl command. MACAddress value can be found under `objectValue` in the response.
 ```shell
-{{
+{
    "apiVersion" : "v2",
    "event" : {
       "apiVersion" : "v2",
-      "deviceName" : "TP-Link-C200-3fa1fe68-b915-4053-a3e1-cc32e5000688",
-      "id" : "0cd84dab-dd01-4bcc-9e2f-b5edc18c9e70",
-      "origin" : 1657922488995800481,
+      "deviceName" : "TP-Link-C200-3fa1fe68-b915-4053-a3e1-1027f5ea8888",
+      "id" : "433ba9bd-fe5a-4120-91b1-024a16005ab4",
+      "origin" : 1658188028882145325,
       "profileName" : "onvif-camera",
       "readings" : [
          {
-            "deviceName" : "TP-Link-C200-3fa1fe68-b915-4053-a3e1-cc32e5000688",
-            "id" : "b4668bad-d41c-4135-866e-f7a0d9103410",
-            "origin" : 1657922488995800481,
+            "deviceName" : "TP-Link-C200-3fa1fe68-b915-4053-a3e1-1027f5ea8888",
+            "id" : "ff3293ce-98b8-4d3f-9c12-dec7608ef2a8",
+            "objectValue" : "11:22:33:44:55:66",
+            "origin" : 1658188028882145325,
             "profileName" : "onvif-camera",
             "resourceName" : "MACAddress",
-            "value" : "11:22:33:44:55:66",
-            "valueType" : "String"
+            "value" : "",
+            "valueType" : "Object"
          }
       ],
       "sourceName" : "MACAddress"

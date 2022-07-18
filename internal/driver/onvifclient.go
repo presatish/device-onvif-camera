@@ -293,7 +293,7 @@ func (onvifClient *OnvifClient) callCustomFunction(resourceName, serviceName, fu
 			onvifClient.driver.lc.Errorf("Failed to get MACAddress from the device %s", onvifClient.DeviceName)
 			return nil, edgexError
 		}
-		cv, err = sdkModel.NewCommandValue(resourceName, common.ValueTypeString, metadataObj)
+		cv, err = sdkModel.NewCommandValue(resourceName, common.ValueTypeObject, metadataObj)
 		if err != nil {
 			return nil, errors.NewCommonEdgeX(errors.KindServerError, fmt.Sprintf("failed to create commandValue for the web service '%s' function '%s'", serviceName, functionName), err)
 		}
