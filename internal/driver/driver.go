@@ -198,6 +198,8 @@ func (d *Driver) updateWritableConfig(rawWritableConfig interface{}) {
 	}
 
 	d.macAddressMapper.UpdateMappings(d.config.AppCustom.CredentialsMap)
+	// check device statuses in case the credentials map was updated
+	d.checkStatuses()
 }
 
 // debouncedDiscover adds or updates a future call to Discover. This function is intended to be
@@ -710,14 +712,22 @@ func (d *Driver) newTemporaryOnvifClient(device models.Device) (*OnvifClient, er
 // and update the values in the protocol properties
 // Also the device name is updated if the name starts with "unknown_unknown" and the status is upWithAuth
 func (d *Driver) refreshDevice(device models.Device) error {
+	// save the MAC Address in case it was changed by the calling code
+	hwAddress := device.Protocols[OnvifProtocol][MACAddress]
+
 	devInfo, err := d.getDeviceInformation(device)
 	if err != nil {
 		return err
 	}
 
-	netInfo, err := d.getNetworkInterfaces(device)
-	if err != nil {
-		return err
+	netInfo, netErr := d.getNetworkInterfaces(device)
+	if netErr != nil {
+		d.lc.Warnf("Error trying to get network interfaces for device %s: %s", device.Name, netErr.Error())
+	}
+
+	endpointRef, endpointErr := d.getEndpointReference(device)
+	if endpointErr != nil {
+		d.lc.Warnf("Error trying to get get endpoint reference for device %s: %s", device.Name, endpointErr.Error())
 	}
 
 	// update device to latest version in cache to prevent race conditions
@@ -728,9 +738,17 @@ func (d *Driver) refreshDevice(device models.Device) error {
 
 	isChanged := false
 
-	hwAddress := string(netInfo.NetworkInterfaces.Info.HwAddress)
+	if netErr != nil {
+		hwAddress = string(netInfo.NetworkInterfaces.Info.HwAddress)
+	}
 	if hwAddress != device.Protocols[OnvifProtocol][MACAddress] {
 		device.Protocols[OnvifProtocol][MACAddress] = hwAddress
+		isChanged = true
+	}
+
+	if endpointErr != nil {
+		uuidElements := strings.Split(endpointRef.GUID, ":")
+		device.Protocols[OnvifProtocol][EndpointRefAddress] = uuidElements[len(uuidElements)-1]
 		isChanged = true
 	}
 
@@ -774,30 +792,5 @@ func (d *Driver) refreshDevice(device models.Device) error {
 
 		return d.sdkService.UpdateDevice(device)
 	}
-	return nil
-}
-
-// refreshEndpointReference will attempt to retrieve the device endpoint reference for the specified camera
-// and update the values in the protocol properties
-func (d *Driver) refreshEndpointReference(device models.Device) error {
-	devInfo, err := d.getEndpointReference(device)
-	if err != nil {
-		return err
-	}
-
-	uuidElements := strings.Split(devInfo.GUID, ":")
-	endpointRefAddress := uuidElements[len(uuidElements)-1]
-
-	// update device to latest version in cache to prevent race conditions
-	device, edgeXErr := d.sdkService.GetDeviceByName(device.Name)
-	if err != nil {
-		return edgeXErr
-	}
-
-	if endpointRefAddress != device.Protocols[OnvifProtocol][EndpointRefAddress] {
-		device.Protocols[OnvifProtocol][EndpointRefAddress] = endpointRefAddress
-		return d.sdkService.UpdateDevice(device)
-	}
-
 	return nil
 }

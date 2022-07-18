@@ -34,6 +34,9 @@ func (d *Driver) checkStatuses() {
 			if strings.HasPrefix(device.Name, "unknown_unknown_") && device.Protocols[OnvifProtocol][MACAddress] == "" {
 				if endpointRefAddr := device.Protocols[OnvifProtocol][EndpointRefAddress]; endpointRefAddr != "" {
 					if mac := d.macAddressMapper.MatchEndpointRefAddressToMAC(endpointRefAddr); mac != "" {
+						// we were able to determine the mac address for the device. we set it here which will allow the
+						// code below to use the mac address for looking up the credentials which should exist (valid or invalid)
+						// because the mac mapper contains them.
 						device.Protocols[OnvifProtocol][MACAddress] = mac
 					}
 				}
@@ -46,15 +49,8 @@ func (d *Driver) checkStatuses() {
 			} else if statusChanged && status == UpWithAuth {
 				d.lc.Infof("Device %s is now %s, refreshing the device information.", device.Name, UpWithAuth)
 				go func() { // refresh the device information in the background
-					refreshErr := d.refreshDevice(device)
-					if refreshErr != nil {
+					if refreshErr := d.refreshDevice(device); refreshErr != nil {
 						d.lc.Warnf("An error occurred while refreshing the device %s: %s",
-							device.Name, refreshErr.Error())
-					}
-
-					refreshErr = d.refreshEndpointReference(device)
-					if refreshErr != nil {
-						d.lc.Warnf("An error occurred while refreshing the endpoint reference for %s: %s",
 							device.Name, refreshErr.Error())
 					}
 				}()
