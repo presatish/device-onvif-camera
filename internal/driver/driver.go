@@ -753,7 +753,7 @@ func (d *Driver) refreshDevice(device models.Device) error {
 	}
 
 	if isChanged {
-		if strings.Contains(device.Name, "unknown_unknown_") {
+		if strings.HasPrefix(device.Name, "unknown_unknown_") {
 			err := d.sdkService.RemoveDeviceByName(device.Name)
 			d.lc.Infof("Removing device '%s' to update device with the updated name", device.Name)
 			if err != nil {

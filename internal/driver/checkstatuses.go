@@ -8,6 +8,7 @@ package driver
 
 import (
 	"net"
+	"strings"
 	"sync"
 	"time"
 
@@ -28,6 +29,15 @@ func (d *Driver) checkStatuses() {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
+
+			// if device is unknown, and missing a MAC Address, try and determine the MAC address via the endpoint reference
+			if strings.HasPrefix(device.Name, "unknown_unknown_") && device.Protocols[OnvifProtocol][MACAddress] == "" {
+				if endpointRefAddr := device.Protocols[OnvifProtocol][EndpointRefAddress]; endpointRefAddr != "" {
+					if mac := d.macAddressMapper.MatchEndpointRefAddressToMAC(endpointRefAddr); mac != "" {
+						device.Protocols[OnvifProtocol][MACAddress] = mac
+					}
+				}
+			}
 
 			status := d.testConnectionMethods(device)
 			if statusChanged, updateDeviceStatusErr := d.updateDeviceStatus(device.Name, status); updateDeviceStatusErr != nil {
