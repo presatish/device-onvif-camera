@@ -357,8 +357,9 @@ func (d *Driver) updateExistingDevice(device contract.Device, discDev sdkModel.D
 		shouldUpdate = true
 	}
 
-	if device.Protocols[OnvifProtocol][MACAddress] != discDev.Protocols[OnvifProtocol][MACAddress] {
-		device.Protocols[OnvifProtocol][MACAddress] = discDev.Protocols[OnvifProtocol][MACAddress]
+	discoveredMAC := discDev.Protocols[OnvifProtocol][MACAddress]
+	if discoveredMAC != "" && device.Protocols[OnvifProtocol][MACAddress] != discoveredMAC {
+		device.Protocols[OnvifProtocol][MACAddress] = discoveredMAC
 		shouldUpdate = true
 	}
 
