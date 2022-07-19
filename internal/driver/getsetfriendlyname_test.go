@@ -19,7 +19,7 @@ func getTestDeviceFriendly() contract.Device {
 	return contract.Device{
 		Protocols: map[string]contract.ProtocolProperties{
 			OnvifProtocol: {
-				FriendlyName: "1",
+				FriendlyName: "Outdoor camera",
 			},
 		},
 	}
@@ -129,7 +129,6 @@ func TestOnvifClient_setFriendlyName(t *testing.T) {
 			errorExpected: true,
 		},
 	}
-
 	for _, test := range tests {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
@@ -137,7 +136,6 @@ func TestOnvifClient_setFriendlyName(t *testing.T) {
 				driver: &Driver{
 					lc: logger.NewMockClient(),
 				},
-				DeviceName: "getTestDeviceFriendly()",
 			}
 			updatedDevice, err := onvifClient.setFriendlyName(test.device, []byte(test.data))
 			if test.errorExpected {
