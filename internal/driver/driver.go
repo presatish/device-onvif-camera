@@ -710,7 +710,7 @@ func (d *Driver) newTemporaryOnvifClient(device models.Device) (*OnvifClient, er
 
 // refreshDevice will attempt to retrieve the MAC address and the device info for the specified camera
 // and update the values in the protocol properties
-// Also the device name is updated if the name starts with "unknown_unknown_" and the status is upWithAuth
+// Also the device name is updated if the name starts with the UnknownDevicePrefix and the status is UpWithAuth
 func (d *Driver) refreshDevice(device models.Device) error {
 	// save the MAC Address in case it was changed by the calling code
 	hwAddress := device.Protocols[OnvifProtocol][MACAddress]
@@ -738,7 +738,7 @@ func (d *Driver) refreshDevice(device models.Device) error {
 
 	isChanged := false
 
-	if netErr != nil {
+	if netErr == nil { // only update if there was no error querying the net info
 		hwAddress = string(netInfo.NetworkInterfaces.Info.HwAddress)
 	}
 	if hwAddress != device.Protocols[OnvifProtocol][MACAddress] {
@@ -746,7 +746,7 @@ func (d *Driver) refreshDevice(device models.Device) error {
 		isChanged = true
 	}
 
-	if endpointErr != nil {
+	if endpointErr == nil { // only update if there was no error querying the endpoint ref address
 		uuidElements := strings.Split(endpointRef.GUID, ":")
 		device.Protocols[OnvifProtocol][EndpointRefAddress] = uuidElements[len(uuidElements)-1]
 		isChanged = true
@@ -766,7 +766,7 @@ func (d *Driver) refreshDevice(device models.Device) error {
 		isChanged = true
 	}
 
-	if device.Protocols[OnvifProtocol][FriendlyName] == "" {
+	if device.Protocols[OnvifProtocol][FriendlyName] == "" { // initialize the friendly name if it is blank
 		device.Protocols[OnvifProtocol][FriendlyName] = devInfo.Manufacturer + " " + devInfo.Model
 	}
 

@@ -31,12 +31,12 @@ func (d *Driver) checkStatuses() {
 			defer wg.Done()
 
 			// if device is unknown, and missing a MAC Address, try and determine the MAC address via the endpoint reference
-			if strings.HasPrefix(device.Name, "unknown_unknown_") && device.Protocols[OnvifProtocol][MACAddress] == "" {
+			if strings.HasPrefix(device.Name, UnknownDevicePrefix) && device.Protocols[OnvifProtocol][MACAddress] == "" {
 				if endpointRefAddr := device.Protocols[OnvifProtocol][EndpointRefAddress]; endpointRefAddr != "" {
 					if mac := d.macAddressMapper.MatchEndpointRefAddressToMAC(endpointRefAddr); mac != "" {
-						// we were able to determine the mac address for the device. we set it here which will allow the
-						// code below to use the mac address for looking up the credentials which should exist (valid or invalid)
-						// because the mac mapper contains them.
+						// the mac address for the device was found, so set it here which will allow the
+						// code below to use the mac address for looking up the credentials. Because the mac mapper
+						// already contains them, the credentials will be found (whether they are valid or invalid).
 						device.Protocols[OnvifProtocol][MACAddress] = mac
 					}
 				}
