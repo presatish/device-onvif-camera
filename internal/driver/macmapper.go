@@ -38,8 +38,10 @@ func (m *MACAddressMapper) UpdateMappings(raw map[string]string) {
 
 	credsMap := make(map[string]string)
 	for secretPath, macs := range raw {
-		if _, err := m.sdkService.GetSecretProvider().GetSecret(secretPath, UsernameKey, PasswordKey, AuthModeKey); err != nil {
-			m.sdkService.GetLoggingClient().Warnf("One or more MAC address mappings exist for the secret path '%s' which does not exist in the Secret Store!", secretPath)
+		if strings.ToLower(secretPath) != noAuthSecretPath { // do not check for noAuth
+			if _, err := m.sdkService.GetSecretProvider().GetSecret(secretPath, UsernameKey, PasswordKey, AuthModeKey); err != nil {
+				m.sdkService.GetLoggingClient().Warnf("One or more MAC address mappings exist for the secret path '%s' which does not exist in the Secret Store!", secretPath)
+			}
 		}
 
 		for _, mac := range strings.Split(macs, ",") {
@@ -77,13 +79,13 @@ func (m *MACAddressMapper) ListMACAddresses() []string {
 }
 
 // TryGetSecretPathForMACAddress will return the secret path associated with the mac address passed if a mapping exists,
-// or the default secret path if the mapping is not found, or the mac address is invalid.
+// the default secret path if the mapping is not found, or no auth if the mac address is invalid.
 func (m *MACAddressMapper) TryGetSecretPathForMACAddress(mac string, defaultSecretPath string) string {
 	// sanitize the mac address before looking up to ensure they all match the same format
 	sanitized, err := SanitizeMACAddress(mac)
 	if err != nil {
-		m.sdkService.GetLoggingClient().Warnf("Unable to sanitize mac address: %s. Using default secret path.", err.Error())
-		return defaultSecretPath
+		m.sdkService.GetLoggingClient().Warnf("Unable to sanitize mac address: %s. Using no authentication.", err.Error())
+		return noAuthSecretPath
 	}
 
 	m.credsMu.RLock()
