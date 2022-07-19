@@ -8,6 +8,7 @@ package driver
 
 import (
 	"net"
+	"strings"
 	"sync"
 	"time"
 
@@ -29,6 +30,18 @@ func (d *Driver) checkStatuses() {
 		go func() {
 			defer wg.Done()
 
+			// if device is unknown, and missing a MAC Address, try and determine the MAC address via the endpoint reference
+			if strings.HasPrefix(device.Name, UnknownDevicePrefix) && device.Protocols[OnvifProtocol][MACAddress] == "" {
+				if endpointRefAddr := device.Protocols[OnvifProtocol][EndpointRefAddress]; endpointRefAddr != "" {
+					if mac := d.macAddressMapper.MatchEndpointRefAddressToMAC(endpointRefAddr); mac != "" {
+						// the mac address for the device was found, so set it here which will allow the
+						// code below to use the mac address for looking up the credentials. Because the mac mapper
+						// already contains them, the credentials will be found (whether they are valid or invalid).
+						device.Protocols[OnvifProtocol][MACAddress] = mac
+					}
+				}
+			}
+
 			status := d.testConnectionMethods(device)
 			if statusChanged, updateDeviceStatusErr := d.updateDeviceStatus(device.Name, status); updateDeviceStatusErr != nil {
 				d.lc.Warnf("Could not update device status for device %s: %s", device.Name, updateDeviceStatusErr.Error())
@@ -36,15 +49,8 @@ func (d *Driver) checkStatuses() {
 			} else if statusChanged && status == UpWithAuth {
 				d.lc.Infof("Device %s is now %s, refreshing the device information.", device.Name, UpWithAuth)
 				go func() { // refresh the device information in the background
-					refreshErr := d.refreshDevice(device)
-					if refreshErr != nil {
+					if refreshErr := d.refreshDevice(device); refreshErr != nil {
 						d.lc.Warnf("An error occurred while refreshing the device %s: %s",
-							device.Name, refreshErr.Error())
-					}
-
-					refreshErr = d.refreshEndpointReference(device)
-					if refreshErr != nil {
-						d.lc.Warnf("An error occurred while refreshing the endpoint reference for %s: %s",
 							device.Name, refreshErr.Error())
 					}
 				}()

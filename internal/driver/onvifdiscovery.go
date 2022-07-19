@@ -96,6 +96,7 @@ func (d *Driver) createDiscoveredDevice(onvifDevice onvif.Device) (sdkModel.Disc
 				EndpointRefAddress: endpointRefAddr,
 				DeviceStatus:       Reachable,
 				LastSeen:           timestamp,
+				MACAddress:         "",
 				FriendlyName:       "",
 			},
 			CustomMetadata: {},
@@ -348,6 +349,17 @@ func (d *Driver) updateExistingDevice(device contract.Device, discDev sdkModel.D
 		device.Protocols[OnvifProtocol][Address] = discAddr
 		device.Protocols[OnvifProtocol][Port] = discPort
 
+		shouldUpdate = true
+	}
+
+	if device.Protocols[OnvifProtocol][EndpointRefAddress] != discDev.Protocols[OnvifProtocol][EndpointRefAddress] {
+		device.Protocols[OnvifProtocol][EndpointRefAddress] = discDev.Protocols[OnvifProtocol][EndpointRefAddress]
+		shouldUpdate = true
+	}
+
+	discoveredMAC := discDev.Protocols[OnvifProtocol][MACAddress]
+	if discoveredMAC != "" && device.Protocols[OnvifProtocol][MACAddress] != discoveredMAC {
+		device.Protocols[OnvifProtocol][MACAddress] = discoveredMAC
 		shouldUpdate = true
 	}
 
