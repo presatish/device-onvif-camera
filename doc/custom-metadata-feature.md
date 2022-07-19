@@ -38,7 +38,7 @@ curl --request PUT 'http://0.0.0.0:59882/api/v2/device/name/<device name>/Custom
             "Color":"Black and white",
             "Condition": "Good working condition"
         }
-    }' | json_pp
+    }' | jq .
 ```
 2. The response from the curl command.
 ```
@@ -57,7 +57,7 @@ Use the CustomMetadata resource to get and display the fields of `CustomMetadata
 1. Use this command to return all of the data in the CustomMetadata field.
 
 ```shell
-curl http://localhost:59882/api/v2/device/name/<device name>/CustomMetadata | json_pp
+curl http://localhost:59882/api/v2/device/name/<device name>/CustomMetadata | jq .
 ```
 2. The repsonse from the curl command.
 ```shell
@@ -119,7 +119,7 @@ WwogICAgIkNvbG9yIiwKICAgICJMb2NhdGlvbiIKXQo=
 
 4. Use this command to query the fields you provided in the json object.
 ```shell
-curl http://localhost:59882/api/v2/device/name/<device name>/CustomMetadata?jsonObject=WwogICAgIkNvbG9yIiwKICAgICJMb2NhdGlvbiIKXQo= | json_pp
+curl http://localhost:59882/api/v2/device/name/<device name>/CustomMetadata?jsonObject=WwogICAgIkNvbG9yIiwKICAgICJMb2NhdGlvbiIKXQo= | jq .
 
 ```
 
@@ -166,7 +166,7 @@ curl --request PUT 'http://0.0.0.0:59882/api/v2/device/name/<device name>/Delete
         "DeleteCustomMetadata": [
             "Color", "Condition"
         ]
-    }' | json_pp
+    }' | jq .
 ```
 2. The response from the curl command.
 ```

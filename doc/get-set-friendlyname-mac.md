@@ -37,7 +37,7 @@ curl --request PUT 'http://0.0.0.0:59882/api/v2/device/name/<device name>/Friend
         "FriendlyName": {
             "FriendlyName":"Home camera"
         }
-    }' | json_pp
+    }' | jq .
 ```
 2. The response from the curl command.
 ```
@@ -56,7 +56,7 @@ Use the FriendlyName device resource to retrieve `FriendlyName` of a camera.
 1. Use this command to return FriendlyName field.
 
 ```shell
-curl http://localhost:59882/api/v2/device/name/<device name>/FriendlyName | json_pp
+curl http://localhost:59882/api/v2/device/name/<device name>/FriendlyName | jq .
 ```
 2. Response from the curl command. FriendlyName value can be found under `objectValue` in the response.
 ```shell
@@ -97,7 +97,7 @@ curl --request PUT 'http://0.0.0.0:59882/api/v2/device/name/<device name>/MACAdd
         "MACAddress": {
             "MACAddress":"11:22:33:44:55:66"
         }
-    }' | json_pp
+    }' | jq .
 ```
 2. The response from the curl command.
 ```
@@ -116,7 +116,7 @@ Use the MACAddress device resource to retrieve `MACAddress` of a camera.
 1. Use this command to return MACAddress field.
 
 ```shell
-curl http://localhost:59882/api/v2/device/name/<device name>/MACAddress | json_pp
+curl http://localhost:59882/api/v2/device/name/<device name>/MACAddress | jq .
 ```
 2. Response from the curl command. MACAddress value can be found under `objectValue` in the response.
 ```shell
