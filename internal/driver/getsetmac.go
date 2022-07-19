@@ -30,7 +30,7 @@ func (onvifClient *OnvifClient) setMACAddress(device contract.Device, data []byt
 		key = strings.TrimSpace(key)
 		if key != MACAddress {
 			err := error.New("invalid key")
-			return device, errors.NewCommonEdgeX(errors.KindContractInvalid, "error setting MACAddress:", err)
+			return device, errors.NewCommonEdgeX(errors.KindContractInvalid, "error setting MACAddress", err)
 		}
 		_, err := SanitizeMACAddress(value)
 		if err != nil {
@@ -48,7 +48,7 @@ func (onvifClient *OnvifClient) getMACAddress(device contract.Device) (string, e
 	mac, ok := device.Protocols[OnvifProtocol][MACAddress]
 	if !ok {
 		err := error.New("device is missing mac address")
-		return "", errors.NewCommonEdgeX(errors.KindServerError, "error getting MACAddress:", err)
+		return "", errors.NewCommonEdgeX(errors.KindServerError, "error getting MACAddress", err)
 	}
 	return mac, nil
 }

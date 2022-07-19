@@ -31,7 +31,7 @@ func (onvifClient *OnvifClient) setFriendlyName(device contract.Device, data []b
 		key = strings.TrimSpace(key)
 		if key != FriendlyName {
 			err := error.New("invalid key")
-			return device, errors.NewCommonEdgeX(errors.KindContractInvalid, "error setting FriendlyName:", err)
+			return device, errors.NewCommonEdgeX(errors.KindContractInvalid, "error setting FriendlyName", err)
 		}
 		device.Protocols[OnvifProtocol][FriendlyName] = value // create or update friendly name field
 	}
@@ -44,7 +44,7 @@ func (onvifClient *OnvifClient) getFriendlyName(device contract.Device) (string,
 	name, ok := device.Protocols[OnvifProtocol][FriendlyName]
 	if !ok {
 		err := error.New("device is missing friendly name")
-		return "", errors.NewCommonEdgeX(errors.KindServerError, "error getting FriendlyName:", err)
+		return "", errors.NewCommonEdgeX(errors.KindServerError, "error getting FriendlyName", err)
 	}
 	return name, nil
 }

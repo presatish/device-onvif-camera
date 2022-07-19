@@ -20,7 +20,7 @@ Description = "onvif conformant camera"
     ... 
     [DeviceList.Protocols.CustomMetadata]
     Location = "Front door"
-    Description = "Security camera in the front door facing east"
+    Color = "Black and white"
 ```
 
 
@@ -35,7 +35,6 @@ curl --request PUT 'http://0.0.0.0:59882/api/v2/device/name/<device name>/Custom
     --data-raw '{
         "CustomMetadata": {
             "Location":"Front Door",
-            "Description":"Security camera in the front door facing east",
             "Color":"Black and white",
             "Condition": "Good working condition"
         }
@@ -76,7 +75,6 @@ curl http://localhost:59882/api/v2/device/name/<device name>/CustomMetadata | js
             "id" : "cf96e5c0-bde1-4c0b-9fa4-8f765c8be456",
             "objectValue" : {
                "Color" : "Black and white",
-               "Description": "Security camera in the front door facing east",
                "Condition" : "Good working condition",
                "Location" : "Front Door"
             },
@@ -101,7 +99,7 @@ Pass the `CustomMetadata` resource a query to get specific field(s) in CustomMet
 1. Json object holding an array of fields you want to query.
 ```json
 '[
-    "Description",
+    "Color",
     "Location"
 ]'
 ```
@@ -109,19 +107,19 @@ Pass the `CustomMetadata` resource a query to get specific field(s) in CustomMet
 2. Use this command to convert the json object to base64.
 ```shell
 echo '[
-    "Description",
+    "Color",
     "Location"
 ]' | base64
 ```
 
 3. The response converted to base64.
 ```shell
-WwogICAgIkRlc2NyaXB0aW9uIiwKICAgICJMb2NhdGlvbiIKXQo=
+WwogICAgIkNvbG9yIiwKICAgICJMb2NhdGlvbiIKXQo=
 ```
 
 4. Use this command to query the fields you provided in the json object.
 ```shell
-curl http://localhost:59882/api/v2/device/name/<device name>/CustomMetadata?jsonObject=WwogICAgIkRlc2NyaXB0aW9uIiwKICAgICJMb2NhdGlvbiIKXQo= | json_pp
+curl http://localhost:59882/api/v2/device/name/<device name>/CustomMetadata?jsonObject=WwogICAgIkNvbG9yIiwKICAgICJMb2NhdGlvbiIKXQo= | json_pp
 
 ```
 
@@ -140,7 +138,7 @@ curl http://localhost:59882/api/v2/device/name/<device name>/CustomMetadata?json
             "deviceName" : "3fa1fe68-b915-4053-a3e1-cc32e5000688",
             "id" : "d0c26303-20b5-4ccd-9e63-fb02b87b8ebc",
             "objectValue" : {
-               "Description": "Security camera in the front door facing east",
+               "Color": "Black and white",
                "Location" : "Front Door"
             },
             "origin" : 1655410556448058195,

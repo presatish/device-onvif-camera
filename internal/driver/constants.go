@@ -74,4 +74,6 @@ const (
 	FirmwareVersion = "FirmwareVersion"
 	SerialNumber    = "SerialNumber"
 	HardwareId      = "HardwareId"
+
+	UnknownDevicePrefix = "unknown_unknown_"
 )

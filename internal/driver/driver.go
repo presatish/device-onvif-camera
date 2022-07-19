@@ -710,7 +710,7 @@ func (d *Driver) newTemporaryOnvifClient(device models.Device) (*OnvifClient, er
 
 // refreshDevice will attempt to retrieve the MAC address and the device info for the specified camera
 // and update the values in the protocol properties
-// Also the device name is updated if the name starts with "unknown_unknown" and the status is upWithAuth
+// Also the device name is updated if the name starts with "unknown_unknown_" and the status is upWithAuth
 func (d *Driver) refreshDevice(device models.Device) error {
 	// save the MAC Address in case it was changed by the calling code
 	hwAddress := device.Protocols[OnvifProtocol][MACAddress]
@@ -771,9 +771,9 @@ func (d *Driver) refreshDevice(device models.Device) error {
 	}
 
 	if isChanged {
-		if strings.HasPrefix(device.Name, "unknown_unknown_") {
-			err := d.sdkService.RemoveDeviceByName(device.Name)
+		if strings.HasPrefix(device.Name, UnknownDevicePrefix) {
 			d.lc.Infof("Removing device '%s' to update device with the updated name", device.Name)
+			err := d.sdkService.RemoveDeviceByName(device.Name)
 			if err != nil {
 				d.lc.Warnf("An error occurred while removing the device %s: %s",
 					device.Name, err)
@@ -785,8 +785,8 @@ func (d *Driver) refreshDevice(device models.Device) error {
 				strings.ReplaceAll(devInfo.Manufacturer, " ", "-"),
 				strings.ReplaceAll(devInfo.Model, " ", "-"),
 				device.Protocols[OnvifProtocol][EndpointRefAddress])
-			_, err = d.sdkService.AddDevice(device)
 			d.lc.Infof("Adding device back with the updated name '%s'", device.Name)
+			_, err = d.sdkService.AddDevice(device)
 			return err
 		}
 
