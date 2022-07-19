@@ -129,7 +129,7 @@ func TestOnvifClient_setMACAddress(t *testing.T) {
 		},
 		{
 			name:          "single empty field key",
-			device:        getTestDeviceFriendly(),
+			device:        getTestDeviceMac(),
 			data:          `{"": "Bad key"}`,
 			errorExpected: true,
 		},
@@ -149,7 +149,6 @@ func TestOnvifClient_setMACAddress(t *testing.T) {
 				driver: &Driver{
 					lc: logger.NewMockClient(),
 				},
-				DeviceName: "getTestDeviceFriendly()",
 			}
 			updatedDevice, err := onvifClient.setMACAddress(test.device, []byte(test.data))
 			if test.errorExpected {
